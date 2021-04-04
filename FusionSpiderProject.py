@@ -8,16 +8,37 @@ Duvall Pinkney
 #!/usr/bin/env python
 # license removed for brevity
 #
-# Example program that
-# wanders avoid obstacles
-# T3 version
-# dml 2020
+#1. You will need to import numpy and matplotlib
+
+
+
+#2. you need to make a numpy array to use as a 2D map array
+
+#gMap = np.zeros((gWidth,gHeight)) # zero out map initially
+
+#gWidth and gHeight are dimensions of the array
+
+#3. You can access the numpy array as you would expect, e.g.
+
+#gMap[ix][iy] = gMap[ix][iy] +1
+
+#where ix and iy are the two integer indices
+
+#4. In the shutdown callback, you can plot the map as follows
+
+#    plt.pcolor(gMap)
+#    plt.show()
+ 
+#This will bring up a dialog box with a false color image of the map. There is a button on the dialog box to save the image
+#if you want. You need to kill the dialog box before the program will end.
 #
 #
 
 import math
 import random
 import rospy # needed for ROS
+import matplotlib.pyplot as plt #python plotting library
+import numpy as np              #numpy library
 
 
 # global variable
@@ -65,7 +86,15 @@ def callback_laser(msg):
                else:
                    gBumpRight=True
     return
+# wander_node_mod - version 1
+# Moves forward until it detects a close surface
+#
 
+def wander_node_mod():
+    
+    
+    
+    return
 
 # wander_node - version 1
 # Moves forward until it detects a close surface
@@ -109,9 +138,44 @@ def wander_node():
 
     return
 
+# square_node_mod - version 1
 # to do create square node moditfication to incremently increase the
 # size to map the area
 def square_node_mod():
+    
+    #move in an expanding square per revolution
+    rospy.init_node('Square_Node_Mod', anonymous=True)
+    
+    #
+    vel_pub = rospy.Publisher(motionTopic, Twist, queue_size=1)
+    
+    
+    # register as a subscribe for the laser scan topic
+    scan_sub = rospy.Subscriber(laserTopic, LaserScan, callback_laser)
+    
+    rospy.sleep(1)
+    
+    rate = rospy.Rate(0.5) # Hz
+
+    msg = Twist() # new velocity message
+    msg.linear.x,msg.angular.z=0,0
+    vel_pub.publish(msg) # stop all motors up front
+
+    while not rospy.is_shutdown():
+    
+       msg.linear.x = 0
+       
+       # note build a for loop increase the square
+       for index in range(center-width):
+           
+       msg.angular.z = math.pi / 2.0
+       vel_pub.publish(msg)
+       rospy.sleep(1)
+       msg.linear.x = 0.2
+       msg.angular.z = 0
+       vel_pub.publish(msg)
+       rospy.sleep(3)
+    
     
     
     return
@@ -140,7 +204,7 @@ def square_node():
     while not rospy.is_shutdown():
     
        msg.linear.x = 0
-       msg.angular.z = math.pi / 2.0
+       msg.angular.z = math.pi / 2.0 
        vel_pub.publish(msg)
        rospy.sleep(1)
        msg.linear.x = 0.2
@@ -235,7 +299,7 @@ def gotoTG_node(goalx, goaly):
 #room is mapped
 #
 # order of battle:
-#   FUNCTION CALL: fusio_spider()
+#   FUNCTION CALL: fusion_spider_node()
 # ---> square_node_mod(): maps the room to find the empty space aka exits
 # ----> call goto_mod(): to exit the room
 # ----> calls square_node_mod(): to map the room to find the empty space
@@ -243,7 +307,7 @@ def gotoTG_node(goalx, goaly):
 # ----> if no more areas to map that are unknown call shudown function()
 #-----
     
-def fusion_spider_algorithm():
+def fusion_spider_node():
     
     # do this while mapping is not completed
     square_node_mod()
@@ -275,6 +339,8 @@ def callback_shutdown():
     msg.linear.x=0.0
     pub.publish(msg) 
     rospy.sleep(5)
+    plt.pcolor(gMap)
+    plt.show()
     return
 
 
@@ -283,6 +349,6 @@ def callback_shutdown():
 if __name__ == '__main__':
     try:
         rospy.on_shutdown(callback_shutdown)
-        wander_node()
+        fusion_spider_node()
     except rospy.ROSInterruptException:
         pass
