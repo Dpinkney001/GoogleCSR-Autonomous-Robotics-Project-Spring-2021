@@ -45,6 +45,9 @@ import numpy as np              #numpy library
 
 gLoc = [0,0,0]    # pose of the robot
 
+gMap = np.zeros((gWidth,gHeight)) # zero out map initially
+
+gMap[ix][iy] = gMap[ix][iy] +1
 
 
 #global variable to hold the closest front distance
@@ -91,10 +94,51 @@ def callback_laser(msg):
 #
 
 def wander_node_mod():
+    '''continually move forward until a close surface is detected'''
+    global gBumpLeft, gBumpRight
+
+    # all ROS 'nodes' (ie your program) have to do the following
+    rospy.init_node('Wander_Node', anonymous=True)
+
+    #register as a ROS publisher for the velocity topic 
+    vel_pub = rospy.Publisher(motionTopic, Twist, queue_size=1)
+    # register as a subscribe for the laser scan topic
+    scan_sub = rospy.Subscriber(laserTopic, LaserScan, callback_laser)
+
+    # this is how frequently the loop below iterates
+    rospy.sleep(1)
+    
+    rate = rospy.Rate(10) # Hz
+
+    msg = Twist() # new velocity message
+    msg.linear.x,msg.angular.z=0,0
+    vel_pub.publish(msg) # stop all motors up front
+
+    turnVel = 1.5 # amoun to turn away from an obstacle
+    while not rospy.is_shutdown():
+
+        flip = random.randint(0,10) # 10% prob of random direction change
+        if gBumpLeft or flip==0:
+                msg.linear.x,msg.angular.z=0.0,turnVel
+        elif gBumpRight:
+            msg.linear.x,msg.angular.z=0.0,-turnVel
+        else:
+                # random forward velocity 0.1 .. 0.5
+                msg.linear.x,msg.angular.z= float(random.randint(1,6))/10.0,0
+
+        vel_pub.publish(msg)
+        rate.sleep()
+    
+    
     
     
     
     return
+
+#---------------------------------------------------------------------
+#do NOT CALL ONLY FOR REFERENCE
+#------------------------------------------------------------------------
+
 
 # wander_node - version 1
 # Moves forward until it detects a close surface
@@ -137,6 +181,16 @@ def wander_node():
         rate.sleep()
 
     return
+#---------------------------------------------------------------------
+#do NOT CALL ONLY FOR REFERENCE
+#------------------------------------------------------------------------
+
+
+
+
+
+
+
 
 # square_node_mod - version 1
 # to do create square node moditfication to incremently increase the
@@ -153,6 +207,12 @@ def square_node_mod():
     # register as a subscribe for the laser scan topic
     scan_sub = rospy.Subscriber(laserTopic, LaserScan, callback_laser)
     
+    #rospy.init_node('scan_values')
+    # = rospy.Subscriber('/kobuki/laser/scan', LaserScan, callback)
+    rospy.spin()
+    
+    
+    
     rospy.sleep(1)
     
     rate = rospy.Rate(0.5) # Hz
@@ -165,24 +225,25 @@ def square_node_mod():
     
        msg.linear.x = 0
        
-       # note build a for loop increase the square
-       for index in range(center-width):
+       # note build a for loop increase the square based on laser reading
+       for index in range(len(scan_sub)):
            
-       msg.angular.z = math.pi / 2.0
-       vel_pub.publish(msg)
-       rospy.sleep(1)
-       msg.linear.x = 0.2
-       msg.angular.z = 0
-       vel_pub.publish(msg)
-       rospy.sleep(3)
+           msg.angular.z = math.pi / 2.0 + index
+           vel_pub.publish(msg)
+           rospy.sleep(1)
+           msg.linear.x = 0.4
+           msg.angular.z = 0
+           vel_pub.publish(msg)
+           rospy.sleep(3)
     
     
     
     return
 
 
-
-
+#---------------------------------------------------------------------
+#do NOT CALL ONLY FOR REFERENCE
+#------------------------------------------------------------------------
 def square_node():
     '''move roughly in a square'''
     
@@ -213,6 +274,9 @@ def square_node():
        rospy.sleep(3)
 
     return
+#---------------------------------------------------------------------
+#do NOT CALL ONLY FOR REFERENCE
+#------------------------------------------------------------------------
 
 
 
@@ -289,6 +353,12 @@ def gotoTG_node(goalx, goaly):
     msg.angular.z = 0
     msg.linear.x = 0
     pub.publish(msg)
+
+def callback(msg):
+    print len(msg.ranges)
+
+
+
     
 #using the algorithmsgiven like wander.py movesquareT3 and goto.py
 #function to create a custom algorithm thatscans the area in 
@@ -308,6 +378,8 @@ def gotoTG_node(goalx, goaly):
 #-----
     
 def fusion_spider_node():
+    
+    
     
     # do this while mapping is not completed
     square_node_mod()
