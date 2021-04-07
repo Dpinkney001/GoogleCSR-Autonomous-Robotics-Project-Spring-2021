@@ -158,9 +158,9 @@ import numpy as np              #numpy library
 
 gLoc = [0,0,0]    # pose of the robot
 
-gMap = np.zeros((gWidth,gHeight)) # zero out map initially
+#gMap = np.zeros((gWidth,gHeight)) # zero out map initially
 
-gMap[ix][iy] = gMap[ix][iy] +1
+#gMap[ix][iy] = gMap[ix][iy] +1
 
 
 #global variable to hold the closest front distance
