@@ -17,7 +17,25 @@ We discussed adding two items of state information to the Wander robot
  
  robot on a grid. This needs to be transformed to array indices.
 
-You can use a linear transformation: index = scale * coordinate + offset. In this the coordinate is either the x or the y coordinate of position. The scale magnifies the coordinates from meters to centimeters or millimeters - whatever resolution you want. The offset displaces the coordinates to the middle of the array, so that negative values will appear on the left or top and positive values on the right or bottom. And 0,0 will be right in the middle. Remember you must make the index an integer as the last step, in order to use it to access the numpy array. The attached code (plotting maps.txt) shows an example of setting up the numpy array.
+You can use a linear transformation: index = scale * coordinate + offset.
+
+ In this the coordinate is either the x or the y coordinate of position.
+
+ The scale magnifies the coordinates from meters to centimeters or
+
+ millimeters - whatever resolution you want. The offset displaces the
+
+ coordinates to the middle of the array, so that negative values will 
+ 
+ appear on the left or top and positive values on the right or bottom. 
+ 
+ And 0,0 will be right in the middle. Remember you must make the index 
+ 
+ an integer as the last step, in order to use it to access the numpy
+
+ array. The attached code (plotting maps.txt) shows an example of setting
+
+ up the numpy array.
 
 The easiest way to use this map is to just add 1 to the elemnt at 
 
@@ -321,9 +339,10 @@ def square_node_mod():
        msg.linear.x = 0
        
        # note build a for loop increase the square based on laser reading
+       index = 1
        for index in range(len(scan_sub)):
            
-           msg.angular.z = math.pi / 2.0 + index
+           msg.angular.z = (math.pi / 2.0 ) * index
            vel_pub.publish(msg)
            rospy.sleep(1)
            msg.linear.x = 0.4
