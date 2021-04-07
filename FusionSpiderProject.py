@@ -331,7 +331,7 @@ def square_node_mod():
     rate = rospy.Rate(0.5) # Hz
 
     msg = Twist() # new velocity message
-    msg.linear.x,msg.angular.z=0,0
+    msg.linear.x, msg.angular.z = 0,0
     vel_pub.publish(msg) # stop all motors up front
 
     while not rospy.is_shutdown():
@@ -373,7 +373,7 @@ def square_node():
     rate = rospy.Rate(0.5) # Hz
 
     msg = Twist() # new velocity message
-    msg.linear.x,msg.angular.z=0,0
+    msg.linear.x, msg.angular.z = 0,0
     vel_pub.publish(msg) # stop all motors up front
 
     while not rospy.is_shutdown():
@@ -504,13 +504,16 @@ def fusion_spider_node():
     # proceed to the one not traveled yet
     # call goto to proceed to that point
     
-    gotoTG_node(goalx, goaly)
+    
+    # Gmapping is needed here
+    
+    #gotoTG_node(goalx, goaly)
     
     #when goto completes call square_node_mod() to map the area
     
-    square_node_mod()
+    #square_node_mod()
 
-        
+    return    
 
 #
 # This function is called by ROS when you stop ROS
